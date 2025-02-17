@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"practise.com/rest-api-go/models"
+	"practise.com/rest-api-go/utils"
 )
 
 func GetEvents(context *gin.Context) {
@@ -42,9 +43,25 @@ func GetEvent(context *gin.Context) {
 }
 
 func CreateEvent(context *gin.Context) {
+	//We ecpect the token to be part of the header request
+	token := context.Request.Header.Get("Authorization")
+
+	//fiest lets se if there is a token, if there is no token, we send an error
+	if token == "" {
+		context.JSON(http.StatusUnauthorized, gin.H{"message": "Not Autorized"})
+		return
+	}
+	//now lets se if the token is valid
+	err := utils.VerifyToken(token)
+
+	if err != nil {
+		context.JSON(http.StatusUnauthorized, gin.H{"message": "Not Autorized"})
+		return
+	}
+
 	var event models.Event
 	//if the structure and JSON we receive from FE are the same, this method do all the work to parse it
-	err := context.ShouldBindJSON(&event)
+	err = context.ShouldBindJSON(&event)
 
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"message": "could not parse request data"})

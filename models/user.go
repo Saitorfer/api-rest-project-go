@@ -46,15 +46,15 @@ func (u User) Save() error {
 }
 
 // validate the user password to generate a token
-func (u User) ValidateCredentials() error {
-	query := `SELECT password from users WHERE email = ?`
+func (u *User) ValidateCredentials() error {
+	query := `SELECT id, password from users WHERE email = ?`
 	row := db.DB.QueryRow(query, u.Email)
 
 	var retrievedPassword string
-	err := row.Scan(&retrievedPassword)
+	err := row.Scan(&u.ID, &retrievedPassword)
 
 	if err != nil {
-		return errors.New("emails invalid")
+		return errors.New("email is invalid")
 	}
 
 	passwordIsValid := utils.CheckPasswordHash(u.Password, retrievedPassword)
